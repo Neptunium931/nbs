@@ -175,6 +175,18 @@ rmPath(const char *path)
         rmPath(PATH(path, file));
       }
     });
+
+    if (rmdir(path) < 0)
+    {
+      if (errno == ENOENT)
+      {
+        WARN("directory %s does not exist", path);
+      }
+      else
+      {
+        PANIC("can not remove directory %s: %s", path, strerror(errno));
+      }
+    }
   }
   else
   {
