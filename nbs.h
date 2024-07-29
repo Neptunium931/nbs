@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #ifndef BUILD_DIR
 #define BUILD_DIR "./build"
@@ -24,14 +25,14 @@
 
 typedef struct
 {
-  char *elems;
+  const char **elems;
   size_t count;
 } str_array;
 
 str_array array_make(const char *first, ...);
-const char *array_join(const char sep, str_array array);
+const char *array_join(const char *sep, str_array array);
 
-void rmPath(char *path);
+void rmPath(const char *path);
 #define RM(path)                                                              \
   {                                                                           \
     INFO("rm: %s", path);                                                     \
@@ -59,7 +60,7 @@ void rmPath(char *path);
     closedir(dir);                                                            \
   }
 
-int path_is_dir(char *path);
+int path_is_dir(const char *path);
 #define IS_DIR(path) path_is_dir(path)
 
 void VLOG(FILE *strean, char *tag, char *fmt, va_list args);
@@ -86,15 +87,68 @@ array_make(const char *first, ...)
   {
     result.count++;
   }
+  va_end(args);
+  result.elems = malloc(sizeof(result.elems[0]) * result.count);
+  if (result.elems == NULL)
+  {
+    PANIC("could not allocate memory: %s", strerror(errno));
+  }
+  result.count = 0;
+  result.elems[result.count++] = first;
+
+  va_start(args, first);
+  for (const char *next = va_arg(args, const char *); next != NULL;
+       next = va_arg(args, const char *))
+  {
+    result.elems[result.count++] = next;
+  }
+  va_end(args);
+
+  return result;
 }
 
 const char *
-array_join(const char sep, str_array array)
+array_join(const char *sep, str_array array)
 {
+  if (array.count == 0)
+  {
+    return "";
+  }
+
+  const size_t sep_len = strlen(sep);
+  size_t len = 0;
+  for (size_t i = 0; i < array.count; ++i)
+  {
+    len += strlen(array.elems[i]);
+  }
+
+  const size_t result_len = (array.count - 1) * sep_len + len + 1;
+  char *result = malloc(sizeof(char) * result_len);
+  if (result == NULL)
+  {
+    PANIC("could not allocate memory: %s", strerror(errno));
+  }
+
+  len = 0;
+  for (size_t i = 0; i < array.count; ++i)
+  {
+    if (i > 0)
+    {
+      memcpy(result + len, sep, sep_len);
+      len += sep_len;
+    }
+
+    size_t elem_len = strlen(array.elems[i]);
+    memcpy(result + len, array.elems[i], elem_len);
+    len += elem_len;
+  }
+  result[len] = '\0';
+
+  return result;
 }
 
 int
-path_is_dir(char *path)
+path_is_dir(const char *path)
 {
   struct stat statPath = { 0 };
   if (stat(path, &statPath) < 0)
@@ -111,14 +165,14 @@ path_is_dir(char *path)
 }
 
 void
-rmPath(char *path)
+rmPath(const char *path)
 {
   if (IS_DIR(path))
   {
     FOREACH_FILE_DIR(file, path, {
       if (strcmp(file, ".") != 0 && strcmp(file, "..") != 0)
       {
-        path_rm(PATH(path, file));
+        rmPath(PATH(path, file));
       }
     });
   }

@@ -4,6 +4,7 @@
 int
 main(int argc, char *argv[])
 {
+
   RM("./build");
 
   INFO("%s", "test INFO");
