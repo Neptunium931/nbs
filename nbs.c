@@ -4,7 +4,7 @@
 int
 main(int argc, char *argv[])
 {
-
+  MKDIR("./build", "test", "test2");
   RM("./build");
 
   INFO("%s", "test INFO");

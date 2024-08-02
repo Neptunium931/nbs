@@ -32,6 +32,14 @@ typedef struct
 str_array array_make(const char *first, ...);
 const char *array_join(const char *sep, str_array array);
 
+void mkdirPath(str_array path);
+#define MKDIR(...)                                                            \
+  {                                                                           \
+    str_array path = array_make(__VA_ARGS__, NULL);                           \
+    INFO("MKDIRS: %s", array_join(PATH_SEP, path));                           \
+    mkdirPath(path);                                                          \
+  }
+
 void rmPath(const char *path);
 #define RM(path)                                                              \
   {                                                                           \
@@ -145,6 +153,56 @@ array_join(const char *sep, str_array array)
   result[len] = '\0';
 
   return result;
+}
+
+void
+mkdirPath(str_array path)
+{
+  if (path.count == 0)
+  {
+    return;
+  }
+  size_t len = 0;
+  for (size_t i = 0; i < path.count; ++i)
+  {
+    len += strlen(path.elems[i]);
+  }
+
+  size_t sepsCount = path.count - 1;
+  const size_t sepLen = strlen(PATH_SEP);
+
+  char *result = malloc(sizeof(char) * (len + sepsCount * sepLen + 1));
+  if (result == NULL)
+  {
+    PANIC("could not allocate memory: %s", strerror(errno));
+  }
+  len = 0;
+  for (size_t i = 0; i < path.count; ++i)
+  {
+    size_t n = strlen(path.elems[i]);
+    memcpy(result + len, path.elems[i], n);
+    len += n;
+
+    if (sepsCount > 0)
+    {
+      memcpy(result + len, PATH_SEP, sepLen);
+      len += sepLen;
+      sepsCount--;
+    }
+    result[len] = '\0';
+    if (mkdir(result, 0755) < 0)
+    {
+      if (errno == EEXIST)
+      {
+        errno = 0;
+        WARN("directory %s already exists", result);
+      }
+      else
+      {
+        PANIC("can not create directory %s: %s", result, strerror(errno));
+      }
+    }
+  }
 }
 
 int
