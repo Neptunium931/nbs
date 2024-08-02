@@ -11,13 +11,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#ifndef BUILD_DIR
-#define BUILD_DIR "./build"
-#endif // !BUILD_DIR
-#ifndef CC
-#define CC "cc"
-#endif // !CC
-
 #define PATH_SEP "/"
 #define JOIN(sep, ...) array_join(sep, array_make(__VA_ARGS__, NULL))
 #define CONCAT(...) JOIN("", __VA_ARGS__)
