@@ -10,6 +10,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #define PATH_SEP "/"
@@ -22,6 +23,11 @@ typedef struct
   const char **elems;
   size_t count;
 } str_array;
+
+typedef struct
+{
+  str_array line;
+} cmd;
 
 typedef pid_t pid;
 
@@ -65,10 +71,21 @@ void rmPath(const char *path);
     closedir(dir);                                                            \
   }
 
+#define CMD(...)                                                              \
+  {                                                                           \
+    cmd cmd = {                                                               \
+      .line = arrayMake(__VA_ARGS__, NULL),                                   \
+    };                                                                        \
+    INFO("CMD: %s", arrayJoin(" ", cmd.line));                                \
+    runCommandSync(cmd);                                                      \
+  }
+
 int path_is_dir(const char *path);
 #define IS_DIR(path) path_is_dir(path)
 
 pid runCommandAsync(cmd cmd);
+void pidWait(pid pid);
+void runCommandSync(cmd cmd);
 const char *showCmd(cmd cmd);
 
 void VLOG(FILE *strean, char *tag, char *fmt, va_list args);
@@ -299,6 +316,34 @@ runCommandAsync(cmd cmd)
     }
   }
   return pid;
+}
+
+void
+pidWait(pid pid)
+{
+  int status = 0;
+  if (waitpid(pid, &status, 0) < 0)
+  {
+    PANIC("can not wait for %d: %s", pid, strerror(errno));
+  }
+  if (WIFSIGNALED(status))
+  {
+    PANIC("process %d was terminated by signal %d", pid, WTERMSIG(status));
+  }
+  if (WIFEXITED(status))
+  {
+    if (WEXITSTATUS(status) != 0)
+    {
+      PANIC("process %d exited with status %d", pid, WEXITSTATUS(status));
+    }
+  }
+}
+
+void
+runCommandSync(cmd cmd)
+{
+  pid pid = runCommandAsync(cmd);
+  pidWait(pid);
 }
 
 void
