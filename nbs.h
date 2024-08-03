@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 #define PATH_SEP "/"
-#define JOIN(sep, ...) array_join(sep, array_make(__VA_ARGS__, NULL))
+#define JOIN(sep, ...) arrayJoin(sep, arrayMake(__VA_ARGS__, NULL))
 #define CONCAT(...) JOIN("", __VA_ARGS__)
 #define PATH(...) JOIN(PATH_SEP, __VA_ARGS__)
 
@@ -22,14 +22,14 @@ typedef struct
   size_t count;
 } str_array;
 
-str_array array_make(const char *first, ...);
-const char *array_join(const char *sep, str_array array);
+str_array arrayMake(const char *first, ...);
+const char *arrayJoin(const char *sep, str_array array);
 
 void mkdirPath(str_array path);
 #define MKDIR(...)                                                            \
   {                                                                           \
-    str_array path = array_make(__VA_ARGS__, NULL);                           \
-    INFO("MKDIRS: %s", array_join(PATH_SEP, path));                           \
+    str_array path = arrayMake(__VA_ARGS__, NULL);                            \
+    INFO("MKDIRS: %s", arrayJoin(PATH_SEP, path));                            \
     mkdirPath(path);                                                          \
   }
 
@@ -73,7 +73,7 @@ void PANIC(char *fmt, ...);
 
 #ifdef NBS_IMPLEMENTATION
 str_array
-array_make(const char *first, ...)
+arrayMake(const char *first, ...)
 {
   str_array result = { 0 };
   if (first == NULL)
@@ -109,7 +109,7 @@ array_make(const char *first, ...)
 }
 
 const char *
-array_join(const char *sep, str_array array)
+arrayJoin(const char *sep, str_array array)
 {
   if (array.count == 0)
   {
