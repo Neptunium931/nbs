@@ -4,6 +4,8 @@
 int
 main(int argc, char *argv[])
 {
+
+  CMD("echo", "test", "test2");
   MKDIR("./build", "test", "test2");
   RM("./build");
 
