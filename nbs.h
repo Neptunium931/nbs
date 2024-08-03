@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #define PATH_SEP "/"
@@ -22,6 +23,9 @@ typedef struct
   size_t count;
 } str_array;
 
+typedef pid_t pid;
+
+str_array arrayAppend(str_array array, const char *elem);
 str_array arrayMake(const char *first, ...);
 const char *arrayJoin(const char *sep, str_array array);
 
@@ -64,6 +68,9 @@ void rmPath(const char *path);
 int path_is_dir(const char *path);
 #define IS_DIR(path) path_is_dir(path)
 
+pid runCommandAsync(cmd cmd);
+const char *showCmd(cmd cmd);
+
 void VLOG(FILE *strean, char *tag, char *fmt, va_list args);
 void INFO(char *fmt, ...);
 void WARN(char *fmt, ...);
@@ -72,6 +79,19 @@ void PANIC(char *fmt, ...);
 #endif // NBS_H
 
 #ifdef NBS_IMPLEMENTATION
+str_array
+arrayAppend(str_array array, const char *elem)
+{
+  array.count++;
+  array.elems = realloc(array.elems, sizeof(array.elems[0]) * array.count);
+  if (array.elems == NULL)
+  {
+    PANIC("could not allocate memory: %s", strerror(errno));
+  }
+  array.elems[array.count - 1] = elem;
+  return array;
+}
+
 str_array
 arrayMake(const char *first, ...)
 {
@@ -254,6 +274,31 @@ rmPath(const char *path)
       }
     }
   }
+}
+
+const char inline *
+showCmd(cmd cmd)
+{
+  return arrayJoin(" ", cmd.line);
+}
+
+pid
+runCommandAsync(cmd cmd)
+{
+  pid pid = fork();
+  if (pid < 0)
+  {
+    PANIC("can not fork: %s", strerror(errno));
+  }
+  if (pid == 0)
+  {
+    str_array args = arrayAppend(cmd.line, NULL);
+    if (execvp(args.elems[0], (char *const *)args.elems) < 0)
+    {
+      PANIC("can not execute %s: %s", showCmd(cmd), strerror(errno));
+    }
+  }
+  return pid;
 }
 
 void
