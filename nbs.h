@@ -88,6 +88,39 @@ void pidWait(pid pid);
 void runCommandSync(cmd cmd);
 const char *showCmd(cmd cmd);
 
+#define addSrcFile(target, strIn)                                             \
+  {                                                                           \
+    const char *in = strIn;                                                   \
+    target.targets =                                                          \
+      realloc(target.targets, sizeof(src_file) * (target.countFiles + 1));    \
+    if (target.targets == NULL)                                               \
+    {                                                                         \
+      PANIC("could not allocate memory: %s", strerror(errno));                \
+    }                                                                         \
+    target.targets[target.countFiles].in = malloc(strlen(in) + 1);            \
+    if (target.targets[target.countFiles].in == NULL)                         \
+    {                                                                         \
+      PANIC("could not allocate memory: %s", strerror(errno));                \
+    }                                                                         \
+    strcpy(target.targets[target.countFiles].in, in);                         \
+    target.targets[target.countFiles].out = CONCAT(PATH(buildDir, in), ".o"); \
+    target.countFiles++;                                                      \
+  }
+
+typedef struct
+{
+  const char *in;
+  const char *out;
+  cmd compileCmd;
+} src_file;
+
+typedef struct
+{
+  src_file *targets;
+  size_t countFiles;
+  cmd linkCmd;
+} target;
+
 void VLOG(FILE *strean, char *tag, char *fmt, va_list args);
 void INFO(char *fmt, ...);
 void WARN(char *fmt, ...);
