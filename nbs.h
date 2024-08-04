@@ -80,8 +80,8 @@ void rmPath(const char *path);
     runCommandSync(cmd);                                                      \
   }
 
-int path_is_dir(const char *path);
-#define IS_DIR(path) path_is_dir(path)
+int pathIsDir(const char *path);
+#define IS_DIR(path) pathIsDir(path)
 
 pid runCommandAsync(cmd cmd);
 void pidWait(pid pid);
@@ -236,7 +236,7 @@ mkdirPath(str_array path)
 }
 
 int
-path_is_dir(const char *path)
+pathIsDir(const char *path)
 {
   struct stat statPath = { 0 };
   if (stat(path, &statPath) < 0)
