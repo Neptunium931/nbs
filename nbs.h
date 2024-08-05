@@ -102,6 +102,10 @@ typedef struct
   cmd linkCmd;
 } target;
 
+bool testIfCommandExists(const char *command);
+const char *findComplieCommand(const char *in);
+void makeCompileCommand(const src_file *src, const char *buildDir);
+
 #define addSrcFile(target, strIn)                                             \
   {                                                                           \
     const char *in = strIn;                                                   \
