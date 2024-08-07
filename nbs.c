@@ -8,10 +8,12 @@ int
 main(int argc, char *argv[])
 {
   static target target;
-  addSrcFile(target, "main.c");
+  ADD_SRC_FILE(target, "main.c");
   CMD("echo", "test", "test2");
   MKDIR("./build", "test", "test2");
   RM("./build");
+  const char *file = PATH(buildDir, "main.o");
+  findComplieCommand(file);
 
   INFO("%s", "test INFO");
   WARN("%s", "test WARN");

@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -100,13 +101,10 @@ typedef struct
   src_file *targets;
   size_t countFiles;
   cmd linkCmd;
+  const char *buildDir;
 } target;
 
-bool testIfCommandExists(const char *command);
-const char *findComplieCommand(const char *in);
-void makeCompileCommand(const src_file *src, const char *buildDir);
-
-#define addSrcFile(target, strIn)                                             \
+#define ADD_SRC_FILE(target, strIn, compileCmd)                               \
   {                                                                           \
     const char *in = strIn;                                                   \
     target.targets =                                                          \
@@ -124,8 +122,9 @@ void makeCompileCommand(const src_file *src, const char *buildDir);
     target.targets[target.countFiles].out =                                   \
       (char *)CONCAT(PATH(buildDir, in), ".o");                               \
     target.countFiles++;                                                      \
-    INFO(                                                                     \
-      "addSrcFile: %s -> %s", in, target.targets[target.countFiles - 1].out); \
+    INFO("ADD_SRC_FILE: %s -> %s",                                            \
+         in,                                                                  \
+         target.targets[target.countFiles - 1].out);                          \
   }
 
 void VLOG(FILE *strean, char *tag, char *fmt, va_list args);
