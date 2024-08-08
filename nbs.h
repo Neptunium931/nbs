@@ -3,6 +3,31 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+typedef struct
+{
+  char *cmd;
+  char *args;
+} cmd;
+
+typedef struct
+{
+  char *path;
+  char *compiledPath;
+  cmd *compileCmd;
+} sourceFile;
+
+typedef struct
+{
+  sourceFile *sourceFiles;
+  int numSourceFiles;
+  char *targetPath;
+  char *targetName;
+  cmd *linkCmd;
+} target;
+
+target *createTarget(char *targetPath, char *targetName);
+void freeTarget(target *target);
+
 void VLOG(FILE *strean, char *tag, char *fmt, va_list args);
 void INFO(char *fmt, ...);
 void WARN(char *fmt, ...);
