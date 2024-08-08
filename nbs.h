@@ -6,7 +6,8 @@
 typedef struct
 {
   char *cmd;
-  char *args;
+  char **args;
+  int numArgs;
 } cmd;
 
 typedef struct
@@ -25,8 +26,27 @@ typedef struct
   cmd *linkCmd;
 } target;
 
-target *createTarget(char *targetPath, char *targetName);
-void freeTarget(target *target);
+const cmd *createCmd(const char cmdName, const char first, ...);
+void showCmd(const cmd cmd);
+const cmd *addArgs(const cmd cmd, const char args, ...);
+void freeCmd(const cmd *cmd);
+
+const char *getFIleName(const char *path);
+
+const sourceFile *createSourceFile(const char *path,
+                                   const char *compiledPath,
+                                   const cmd *compileCmd);
+void freeSourceFile(const sourceFile *sourceFile);
+
+bool needsCompiling(const sourceFile sourceFile);
+
+const target *createTarget(const char *targetPath, const char *targetName);
+const target *addSourceFile(const target target, const sourceFile *sourceFile);
+void showTarget(const target target);
+void freeTarget(const target *target);
+
+void compile(target target);
+void link(target target);
 
 void VLOG(FILE *strean, char *tag, char *fmt, va_list args);
 void INFO(char *fmt, ...);
