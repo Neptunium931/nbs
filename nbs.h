@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 typedef struct
 {
@@ -196,6 +197,22 @@ freeSourceFile(sourceFile *sourceFile)
   free(sourceFile->compiledPath);
   free(sourceFile->compileCmd);
   free(sourceFile);
+}
+
+bool
+needsCompiling(const sourceFile sourceFile)
+{
+  struct stat sourceFileStat;
+  if (stat(sourceFile.path, &sourceFileStat) != 0)
+  {
+    PANIC("could not stat %s : %s", sourceFile.path, strerror(errno));
+  }
+  struct stat compiledFileStat;
+  if (stat(sourceFile.compiledPath, &compiledFileStat) != 0)
+  {
+    PANIC("could not stat %s : %s", sourceFile.compiledPath, strerror(errno));
+  }
+  return sourceFileStat.st_mtime > compiledFileStat.st_mtime;
 }
 
 void
