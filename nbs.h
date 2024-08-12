@@ -40,7 +40,8 @@ const char *getFIleName(const char *path);
 sourceFile *createSourceFile(const char *path,
                              const char *compiledPath,
                              const cmd *compileCmd);
-void freeSourceFile(const sourceFile *sourceFile);
+void showSourceFile(const sourceFile sourceFile);
+void freeSourceFile(sourceFile *sourceFile);
 
 bool needsCompiling(const sourceFile sourceFile);
 
@@ -166,6 +167,35 @@ getFIleName(const char *path)
     return path;
   }
   return lastSlash + 1;
+}
+
+sourceFile *
+createSourceFile(const char *path,
+                 const char *compiledPath,
+                 const cmd *compileCmd)
+{
+  sourceFile *sourceFile = malloc(sizeof(sourceFile));
+  sourceFile->path = strdup(path);
+  sourceFile->compiledPath = strdup(compiledPath);
+  sourceFile->compileCmd = compileCmd;
+  return sourceFile;
+}
+
+void
+showSourceFile(const sourceFile sourceFile)
+{
+  printf("sourceFile: %s\n", sourceFile.path);
+  printf("compiledPath: %s\n", sourceFile.compiledPath);
+  showCmd(*sourceFile.compileCmd);
+}
+
+void
+freeSourceFile(sourceFile *sourceFile)
+{
+  free(sourceFile->path);
+  free(sourceFile->compiledPath);
+  free(sourceFile->compileCmd);
+  free(sourceFile);
 }
 
 void

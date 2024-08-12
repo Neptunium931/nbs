@@ -16,6 +16,11 @@ main(int argc, char *argv[])
   printf("path: %s\n", path);
   printf("file: %s\n", getFIleName(path));
 
+  cmd = createCmd("touch", "hello/world", NULL);
+  sourceFile *sourceFile = createSourceFile(path, "hello/world", cmd);
+  showSourceFile(*sourceFile);
+  freeSourceFile(sourceFile);
+
   INFO("%s", "test INFO");
   WARN("%s", "test WARN");
   ERRO("%s", "test ERRO");
