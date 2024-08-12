@@ -157,6 +157,17 @@ freeCmd(cmd *cmd)
   free(cmd);
 }
 
+const char *
+getFIleName(const char *path)
+{
+  const char *lastSlash = strrchr(path, '/');
+  if (lastSlash == NULL)
+  {
+    return path;
+  }
+  return lastSlash + 1;
+}
+
 void
 VLOG(FILE *stream, char *tag, char *fmt, va_list args)
 {

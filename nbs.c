@@ -12,6 +12,10 @@ main(int argc, char *argv[])
   showCmd(*cmd);
   freeCmd(cmd);
 
+  const char *path = "hello/world";
+  printf("path: %s\n", path);
+  printf("file: %s\n", getFIleName(path));
+
   INFO("%s", "test INFO");
   WARN("%s", "test WARN");
   ERRO("%s", "test ERRO");
