@@ -49,9 +49,10 @@ bool fileExists(const char *path);
 bool needsCompiling(const sourceFile sourceFile);
 
 target *createTarget(const char *targetPath, const char *targetName);
-target *addSourceFile(const target target, const sourceFile *sourceFile);
+void addSourceFile(target *target, const sourceFile *sourceFile);
+void addLinkCmd(target *target, const cmd *linkCmd);
 void showTarget(const target target);
-void freeTarget(const target *target);
+void freeTarget(target *target);
 
 void compileSources(sourceFile sourceFiles);
 void compileTarget(target target);
@@ -230,6 +231,23 @@ needsCompiling(const sourceFile sourceFile)
     PANIC("could not stat %s : %s", sourceFile.compiledPath, strerror(errno));
   }
   return sourceFileStat.st_mtime > compiledFileStat.st_mtime;
+}
+
+target *
+createTarget(const char *targetPath, const char *targetName)
+{
+  target *target = malloc(sizeof(target));
+  target->targetPath = strdup(targetPath);
+  target->targetName = strdup(targetName);
+  return target;
+}
+
+void
+addSourceFile(target *target, const sourceFile *sourceFile)
+{
+  target->sourceFiles = realloc(
+    target->sourceFiles, sizeof(sourceFile) * (target->numSourceFiles + 1));
+  target->sourceFiles[target->numSourceFiles++] = *sourceFile;
 }
 
 void
