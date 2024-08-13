@@ -17,8 +17,18 @@ main(int argc, char *argv[])
   printf("file: %s\n", getFIleName(path));
 
   cmd = createCmd("touch", "hello/world", NULL);
-  sourceFile *sourceFile = createSourceFile(path, "hello/world", cmd);
+  sourceFile *sourceFile = createSourceFile("nbs.c", "nbs.h", cmd);
   showSourceFile(*sourceFile);
+
+  if (needsCompiling(*sourceFile))
+  {
+    printf("needsCompiling: true\n");
+  }
+  else
+  {
+    printf("needsCompiling: false\n");
+  }
+
   freeSourceFile(sourceFile);
 
   INFO("%s", "test INFO");

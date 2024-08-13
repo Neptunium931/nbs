@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 typedef struct
 {
@@ -44,6 +45,7 @@ sourceFile *createSourceFile(const char *path,
 void showSourceFile(const sourceFile sourceFile);
 void freeSourceFile(sourceFile *sourceFile);
 
+bool fileExists(const char *path);
 bool needsCompiling(const sourceFile sourceFile);
 
 target *createTarget(const char *targetPath, const char *targetName);
@@ -51,8 +53,9 @@ target *addSourceFile(const target target, const sourceFile *sourceFile);
 void showTarget(const target target);
 void freeTarget(const target *target);
 
-void compile(target target);
-void link(target target);
+void compileSources(sourceFile sourceFiles);
+void compileTarget(target target);
+void linkTarget(target target);
 
 void VLOG(FILE *strean, char *tag, char *fmt, va_list args);
 void INFO(char *fmt, ...);
@@ -200,8 +203,22 @@ freeSourceFile(sourceFile *sourceFile)
 }
 
 bool
+fileExists(const char *path)
+{
+  if (access(path, F_OK) == 0)
+  {
+    return true;
+  }
+  return false;
+}
+
+bool
 needsCompiling(const sourceFile sourceFile)
 {
+  if (!fileExists(sourceFile.compiledPath))
+  {
+    return true;
+  }
   struct stat sourceFileStat;
   if (stat(sourceFile.path, &sourceFileStat) != 0)
   {
