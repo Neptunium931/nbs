@@ -6,18 +6,18 @@ int
 main(int argc, char *argv[])
 {
 
-  cmd *cmd = createCmd("echo", "hello", "world", NULL);
-  showCmd(*cmd);
-  addArgs(cmd, "h", "w", NULL);
-  showCmd(*cmd);
-  freeCmd(cmd);
+  cmd *cmdTest = createCmd("echo", "hello", "world", NULL);
+  showCmd(*cmdTest);
+  addArgs(cmdTest, "h", "w", NULL);
+  showCmd(*cmdTest);
+  freeCmd(cmdTest);
 
   const char *path = "hello/world";
   printf("path: %s\n", path);
   printf("file: %s\n", getFIleName(path));
 
-  cmd = createCmd("touch", "hello/world", NULL);
-  sourceFile *sourceFile = createSourceFile("nbs.c", "nbs.h", cmd);
+  cmdTest = createCmd("touch", "hello/world", NULL);
+  sourceFile *sourceFile = createSourceFile("nbs.c", "nbs.h", cmdTest);
   showSourceFile(*sourceFile);
 
   if (needsCompiling(*sourceFile))
@@ -29,7 +29,13 @@ main(int argc, char *argv[])
     printf("needsCompiling: false\n");
   }
 
-  freeSourceFile(sourceFile);
+  cmd *linkCmd = createCmd("gcc", "nbs.c", "-o", "nbs", NULL);
+  target *target = createTarget("build", "nbs");
+  addSourceFile(target, sourceFile);
+  addLinkCmd(target, linkCmd);
+  puts("");
+  showTarget(*target);
+  freeTarget(target);
 
   INFO("%s", "test INFO");
   WARN("%s", "test WARN");

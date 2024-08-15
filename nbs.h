@@ -33,26 +33,26 @@ typedef struct
 } target;
 
 cmd *createCmd(const char *cmdName, const char *first, ...);
-void showCmd(const cmd cmd);
-void addArgs(cmd *cmd, const char *first, ...);
-void freeCmd(cmd *cmd);
+void showCmd(const cmd cmdInput);
+void addArgs(cmd *cmdInput, const char *first, ...);
+void freeCmd(cmd *cmdInput);
 
 const char *getFIleName(const char *path);
 
 sourceFile *createSourceFile(const char *path,
                              const char *compiledPath,
                              const cmd *compileCmd);
-void showSourceFile(const sourceFile sourceFile);
-void freeSourceFile(sourceFile *sourceFile);
+void showSourceFile(const sourceFile sourceFileInput);
+void freeSourceFile(sourceFile *sourceFileInput);
 
 bool fileExists(const char *path);
 bool needsCompiling(const sourceFile sourceFile);
 
 target *createTarget(const char *targetPath, const char *targetName);
-void addSourceFile(target *target, const sourceFile *sourceFile);
-void addLinkCmd(target *target, const cmd *linkCmd);
-void showTarget(const target target);
-void freeTarget(target *target);
+void addSourceFile(target *targetInput, sourceFile *sourceFile);
+void addLinkCmd(target *targetInput, cmd *linkCmd);
+void showTarget(const target targetInput);
+void freeTarget(target *targetInput);
 
 void compileSources(sourceFile sourceFiles);
 void compileTarget(target target);
@@ -74,93 +74,97 @@ createCmd(const char *cmdName, const char *first, ...)
   {
     return NULL;
   }
-  cmd *cmd = malloc(sizeof(cmd));
+  cmd *cmdCreate = (cmd *)malloc(sizeof(cmd));
 
-  cmd->command = (char *)malloc(strlen(cmdName) + 1);
-  strcpy(cmd->command, cmdName);
+  cmdCreate->command = (char *)malloc(strlen(cmdName) + 1);
+  strcpy(cmdCreate->command, cmdName);
 
   va_list args;
   va_start(args, first);
+  cmdCreate->numArgs = 1;
   for (const char *next = va_arg(args, const char *); next != NULL;
        next = va_arg(args, const char *))
   {
-    cmd->numArgs++;
+    printf("arg: %s\n", next);
+    cmdCreate->numArgs++;
+    printf("arg: %s\n", next);
   }
   va_end(args);
 
-  cmd->args = (char **)malloc(sizeof(char *) * cmd->numArgs);
-  if (cmd->args == NULL)
+  cmdCreate->args = (char **)malloc(sizeof(char *) * cmdCreate->numArgs);
+  if (cmdCreate->args == NULL)
   {
     PANIC("could not allocate memory : %s", strerror(errno));
   }
 
-  cmd->numArgs = 0;
-  cmd->args[cmd->numArgs++] = first;
+  cmdCreate->numArgs = 0;
+  cmdCreate->args[cmdCreate->numArgs++] = first;
 
   va_start(args, first);
   for (const char *next = va_arg(args, const char *); next != NULL;
        next = va_arg(args, const char *))
   {
-    cmd->args[cmd->numArgs++] = next;
+    cmdCreate->args[cmdCreate->numArgs++] = next;
   }
   va_end(args);
 
-  return cmd;
+  return cmdCreate;
 }
 
 void
-showCmd(const cmd cmd)
+showCmd(const cmd cmdInput)
 {
-  printf("cmd: %s\n", cmd.command);
-  for (int i = 0; i < cmd.numArgs; i++)
+  printf("cmd: %s\n", cmdInput.command);
+  for (int i = 0; i < cmdInput.numArgs; i++)
   {
-    printf("arg[%d]: %s\n", i, cmd.args[i]);
+    printf("arg[%d]: %s\n", i, cmdInput.args[i]);
   }
 }
 
 void
-addArgs(cmd *cmd, const char *first, ...)
+addArgs(cmd *cmdInput, const char *first, ...)
 {
-  if (cmd == NULL || first == NULL)
+  if (cmdInput == NULL || first == NULL)
   {
     return;
   }
 
-  int numArgs = cmd->numArgs;
+  int numArgs = cmdInput->numArgs;
 
   va_list args;
   va_start(args, first);
-  cmd->numArgs++;
+  cmdInput->numArgs++;
   for (const char *next = va_arg(args, const char *); next != NULL;
        next = va_arg(args, const char *))
   {
-    cmd->numArgs++;
+    cmdInput->numArgs++;
   }
   va_end(args);
 
-  cmd->args = (char **)realloc(cmd->args, sizeof(char *) * cmd->numArgs);
-  if (cmd->args == NULL)
+  cmdInput->args =
+    (char **)realloc(cmdInput->args, sizeof(char *) * cmdInput->numArgs);
+  if (cmdInput->args == NULL)
   {
     PANIC("could not allocate memory : %s", strerror(errno));
   }
 
-  cmd->args[numArgs++] = first;
+  cmdInput->args[numArgs++] = first;
 
   va_start(args, first);
   for (const char *next = va_arg(args, const char *); next != NULL;
        next = va_arg(args, const char *))
   {
-    cmd->args[numArgs++] = next;
+    cmdInput->args[numArgs++] = next;
   }
   va_end(args);
 }
 
 void
-freeCmd(cmd *cmd)
+freeCmd(cmd *cmdInput)
 {
-  free(cmd->command);
-  free(cmd->args);
-  free(cmd);
+  free(cmdInput->command);
+  free(cmdInput->args);
+  free(cmdInput);
 }
 
 const char *
@@ -179,28 +183,28 @@ createSourceFile(const char *path,
                  const char *compiledPath,
                  const cmd *compileCmd)
 {
-  sourceFile *sourceFile = malloc(sizeof(sourceFile));
-  sourceFile->path = strdup(path);
-  sourceFile->compiledPath = strdup(compiledPath);
-  sourceFile->compileCmd = compileCmd;
-  return sourceFile;
+  sourceFile *sourceFileCreate = (sourceFile *)malloc(sizeof(sourceFile));
+  sourceFileCreate->path = strdup(path);
+  sourceFileCreate->compiledPath = strdup(compiledPath);
+  sourceFileCreate->compileCmd = compileCmd;
+  return sourceFileCreate;
 }
 
 void
-showSourceFile(const sourceFile sourceFile)
+showSourceFile(const sourceFile sourceFileInput)
 {
-  printf("sourceFile: %s\n", sourceFile.path);
-  printf("compiledPath: %s\n", sourceFile.compiledPath);
-  showCmd(*sourceFile.compileCmd);
+  printf("sourceFile: %s\n", sourceFileInput.path);
+  printf("compiledPath: %s\n", sourceFileInput.compiledPath);
+  showCmd(*sourceFileInput.compileCmd);
 }
 
 void
-freeSourceFile(sourceFile *sourceFile)
+freeSourceFile(sourceFile *sourceFileInput)
 {
-  free(sourceFile->path);
-  free(sourceFile->compiledPath);
-  free(sourceFile->compileCmd);
-  free(sourceFile);
+  free(sourceFileInput->path);
+  free(sourceFileInput->compiledPath);
+  free(sourceFileInput->compileCmd);
+  free(sourceFileInput);
 }
 
 bool
@@ -236,18 +240,59 @@ needsCompiling(const sourceFile sourceFile)
 target *
 createTarget(const char *targetPath, const char *targetName)
 {
-  target *target = malloc(sizeof(target));
-  target->targetPath = strdup(targetPath);
-  target->targetName = strdup(targetName);
-  return target;
+  target *targetCreate = (target *)malloc(sizeof(target));
+  targetCreate->targetPath = strdup(targetPath);
+  targetCreate->targetName = strdup(targetName);
+  return targetCreate;
 }
 
 void
-addSourceFile(target *target, const sourceFile *sourceFile)
+addSourceFile(target *targetInput, sourceFile *sourceFileInput)
 {
-  target->sourceFiles = realloc(
-    target->sourceFiles, sizeof(sourceFile) * (target->numSourceFiles + 1));
-  target->sourceFiles[target->numSourceFiles++] = *sourceFile;
+  if (targetInput->sourceFiles == NULL)
+  {
+    targetInput->sourceFiles = (sourceFile *)malloc(sizeof(sourceFile));
+  }
+  else
+  {
+    targetInput->sourceFiles = (sourceFile *)realloc(
+      targetInput->sourceFiles,
+      sizeof(sourceFile) * (targetInput->numSourceFiles + 1));
+  }
+  targetInput->sourceFiles[targetInput->numSourceFiles++] = *sourceFileInput;
+}
+
+void
+addLinkCmd(target *targetInput, cmd *linkCmd)
+{
+  targetInput->linkCmd = linkCmd;
+}
+
+void
+showTarget(const target targetInput)
+{
+  printf("target: %s\n", targetInput.targetName);
+  puts("sourceFiles:");
+  for (int i = 0; i < targetInput.numSourceFiles; i++)
+  {
+    showSourceFile(targetInput.sourceFiles[i]);
+  }
+  puts("linkCmd:");
+  showCmd(*targetInput.linkCmd);
+}
+
+void
+freeTarget(target *targetInput)
+{
+  free(targetInput->targetPath);
+  free(targetInput->targetName);
+  free(targetInput->linkCmd);
+  for (int i = 0; i < targetInput->numSourceFiles; i++)
+  {
+    freeSourceFile(&targetInput->sourceFiles[i]);
+  }
+  free(targetInput->sourceFiles);
+  free(targetInput);
 }
 
 void
