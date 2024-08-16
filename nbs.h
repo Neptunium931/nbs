@@ -254,7 +254,7 @@ needsCompiling(const sourceFile sourceFile)
 target *
 createTarget(const char *targetPath, const char *targetName)
 {
-  target *targetCreate = (target *)malloc(sizeof(target));
+  target *targetCreate = (target *)calloc(sizeof(target), 1);
   targetCreate->targetPath = strdup(targetPath);
   targetCreate->targetName = strdup(targetName);
   return targetCreate;
@@ -286,9 +286,9 @@ void
 showTarget(const target targetInput)
 {
   printf("target: %s\n", targetInput.targetName);
-  puts("sourceFiles:");
   for (int i = 0; i < targetInput.numSourceFiles; i++)
   {
+    printf("sourceFile[%d]:\n", i);
     showSourceFile(targetInput.sourceFiles[i]);
   }
   puts("linkCmd:");
@@ -303,9 +303,8 @@ freeTarget(target *targetInput)
   free(targetInput->linkCmd);
   for (int i = 0; i < targetInput->numSourceFiles; i++)
   {
-    freeSourceFile(&targetInput->sourceFiles[i]);
+    freeSourceFileChildren(&targetInput->sourceFiles[i]);
   }
-  free(targetInput->sourceFiles);
   free(targetInput);
 }
 

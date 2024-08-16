@@ -17,10 +17,10 @@ main(int argc, char *argv[])
   printf("file: %s\n", getFIleName(path));
 
   cmdTest = createCmd("touch", "hello/world", NULL);
-  sourceFile *sourceFile = createSourceFile("nbs.c", "nbs.h", cmdTest);
-  showSourceFile(*sourceFile);
+  sourceFile *sourceFile1 = createSourceFile("nbs.c", "nbs.h", cmdTest);
+  showSourceFile(*sourceFile1);
 
-  if (needsCompiling(*sourceFile))
+  if (needsCompiling(*sourceFile1))
   {
     printf("needsCompiling: true\n");
   }
@@ -30,8 +30,12 @@ main(int argc, char *argv[])
   }
 
   cmd *linkCmd = createCmd("gcc", "nbs.c", "-o", "nbs", NULL);
+  cmd *compileCmd =
+    createCmd("gcc", "hello/world.c", "-o", "hello/world", NULL);
+  sourceFile *sourceFile2 = createSourceFile("nbs.c", "nbs.h", compileCmd);
   target *target = createTarget("build", "nbs");
-  addSourceFile(target, sourceFile);
+  addSourceFile(target, sourceFile1);
+  addSourceFile(target, sourceFile2);
   addLinkCmd(target, linkCmd);
   puts("");
   showTarget(*target);
