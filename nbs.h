@@ -35,6 +35,7 @@ typedef struct
 cmd *createCmd(const char *cmdName, const char *first, ...);
 void showCmd(const cmd cmdInput);
 void addArgs(cmd *cmdInput, const char *first, ...);
+void freeCmdChildren(cmd *cmdInput);
 void freeCmd(cmd *cmdInput);
 
 const char *getFIleName(const char *path);
@@ -43,6 +44,7 @@ sourceFile *createSourceFile(const char *path,
                              const char *compiledPath,
                              const cmd *compileCmd);
 void showSourceFile(const sourceFile sourceFileInput);
+void freeSourceFileChildren(sourceFile *sourceFileInput);
 void freeSourceFile(sourceFile *sourceFileInput);
 
 bool fileExists(const char *path);
@@ -160,10 +162,16 @@ addArgs(cmd *cmdInput, const char *first, ...)
 }
 
 void
-freeCmd(cmd *cmdInput)
+freeCmdChildren(cmd *cmdInput)
 {
   free(cmdInput->command);
   free(cmdInput->args);
+}
+
+void
+freeCmd(cmd *cmdInput)
+{
+  freeCmdChildren(cmdInput);
   free(cmdInput);
 }
 
@@ -199,11 +207,17 @@ showSourceFile(const sourceFile sourceFileInput)
 }
 
 void
-freeSourceFile(sourceFile *sourceFileInput)
+freeSourceFileChildren(sourceFile *sourceFileInput)
 {
   free(sourceFileInput->path);
   free(sourceFileInput->compiledPath);
-  free(sourceFileInput->compileCmd);
+  freeCmd(sourceFileInput->compileCmd);
+}
+
+void
+freeSourceFile(sourceFile *sourceFileInput)
+{
+  freeSourceFileChildren(sourceFileInput);
   free(sourceFileInput);
 }
 
