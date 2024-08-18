@@ -41,6 +41,12 @@ main(int argc, char *argv[])
   showTarget(*target);
   freeTarget(target);
 
+  puts("");
+  puts("");
+  char **args = createArgsArray("echo", "hello", "world", NULL);
+  runCommandSync(args);
+  free(args);
+
   INFO("%s", "test INFO");
   WARN("%s", "test WARN");
   ERRO("%s", "test ERRO");

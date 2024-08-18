@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 typedef struct
@@ -57,8 +59,13 @@ void showTarget(const target targetInput);
 void freeTarget(target *targetInput);
 
 void compileSources(sourceFile sourceFiles);
-void compileTarget(target target);
-void linkTarget(target target);
+void compileTarget(target targetInput);
+void linkTarget(target targetInput);
+
+char **createArgsArray(const char *first, ...);
+pid_t runCommandAsync(char **args);
+void waitForPid(pid_t pid);
+void runCommandSync(char **args);
 
 void VLOG(FILE *strean, char *tag, char *fmt, va_list args);
 void INFO(char *fmt, ...);
@@ -306,6 +313,73 @@ freeTarget(target *targetInput)
     freeSourceFileChildren(&targetInput->sourceFiles[i]);
   }
   free(targetInput);
+}
+
+char **
+createArgsArray(const char *first, ...)
+{
+  va_list args;
+  va_start(args, first);
+
+  int numArgs = 0;
+  for (const char *next = first; next != NULL;
+       next = va_arg(args, const char *))
+  {
+    numArgs++;
+  }
+  va_end(args);
+
+  char **argsArray = (char **)malloc(sizeof(char *) * (numArgs + 1));
+  if (argsArray == NULL)
+  {
+    PANIC("could not allocate memory for argsArray: %s", strerror(errno));
+  }
+
+  va_start(args, first);
+  argsArray[0] = (char *)first;
+  for (int i = 1; i <= numArgs; i++)
+  {
+    argsArray[i] = va_arg(args, char *);
+  }
+  va_end(args);
+
+  argsArray[numArgs] = NULL;
+
+  return argsArray;
+}
+
+pid_t
+runCommandAsync(char **args)
+{
+  pid_t pid = fork();
+  if (pid < 0)
+  {
+    PANIC("could not fork : %s", strerror(errno));
+  }
+  if (pid == 0)
+  {
+    if (execvp((char *)args[0], (char *const *)args) < 0)
+    {
+      PANIC("could not exec %s : %s", (char *)args[0], strerror(errno));
+    }
+  }
+  return pid;
+}
+
+void
+waitForPid(pid_t pid)
+{
+  int status;
+  if (waitpid(pid, &status, 0) < 0)
+  {
+    PANIC("could not waitpid : %s", strerror(errno));
+  }
+}
+
+void
+runCommandSync(char **args)
+{
+  waitForPid(runCommandAsync(args));
 }
 
 void
