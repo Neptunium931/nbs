@@ -72,7 +72,17 @@ void INFO(char *fmt, ...);
 void WARN(char *fmt, ...);
 void ERRO(char *fmt, ...);
 void PANIC(char *fmt, ...);
+#define CMD(...)                                                              \
+  {                                                                           \
+    runCommandSync(createArgsArray(__VA_ARGS__));                             \
+  }
+
+#define CMD_ASYNC(...)                                                        \
+  {                                                                           \
+    runCommandAsync(createArgsArray(__VA_ARGS__));                            \
+  }
 #endif // NBS_H
+
 #define NBS_IMPLEMENTATION
 #ifdef NBS_IMPLEMENTATION
 
@@ -362,6 +372,7 @@ runCommandAsync(char **args)
     {
       PANIC("could not exec %s : %s", (char *)args[0], strerror(errno));
     }
+    free(args);
   }
   return pid;
 }

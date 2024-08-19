@@ -43,9 +43,8 @@ main(int argc, char *argv[])
 
   puts("");
   puts("");
-  char **args = createArgsArray("echo", "hello", "world", NULL);
-  runCommandSync(args);
-  free(args);
+  CMD("touch", "hello/world");
+  CMD_ASYNC("touch", "hello/world2");
 
   INFO("%s", "test INFO");
   WARN("%s", "test WARN");
