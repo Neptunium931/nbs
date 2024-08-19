@@ -13,7 +13,6 @@
 
 typedef struct
 {
-  char *command;
   char **args;
   int numArgs;
 } cmd;
@@ -34,7 +33,7 @@ typedef struct
   cmd *linkCmd;
 } target;
 
-cmd *createCmd(const char *cmdName, const char *first, ...);
+cmd *createCmd(const char *first, ...);
 void showCmd(const cmd cmdInput);
 void addArgs(cmd *cmdInput, const char *first, ...);
 void freeCmdChildren(cmd *cmdInput);
@@ -87,16 +86,13 @@ void PANIC(char *fmt, ...);
 #ifdef NBS_IMPLEMENTATION
 
 cmd *
-createCmd(const char *cmdName, const char *first, ...)
+createCmd(const char *first, ...)
 {
-  if (cmdName == NULL)
+  if (first == NULL)
   {
     return NULL;
   }
   cmd *cmdCreate = (cmd *)malloc(sizeof(cmd));
-
-  cmdCreate->command = (char *)malloc(strlen(cmdName) + 1);
-  strcpy(cmdCreate->command, cmdName);
 
   va_list args;
   va_start(args, first);
@@ -133,7 +129,6 @@ createCmd(const char *cmdName, const char *first, ...)
 void
 showCmd(const cmd cmdInput)
 {
-  printf("cmd: %s\n", cmdInput.command);
   for (int i = 0; i < cmdInput.numArgs; i++)
   {
     printf("arg[%d]: %s\n", i, cmdInput.args[i]);
@@ -181,7 +176,6 @@ addArgs(cmd *cmdInput, const char *first, ...)
 void
 freeCmdChildren(cmd *cmdInput)
 {
-  free(cmdInput->command);
   free(cmdInput->args);
 }
 
