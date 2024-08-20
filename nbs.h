@@ -319,6 +319,18 @@ freeTarget(target *targetInput)
   free(targetInput);
 }
 
+void
+compileSources(target *targetInput)
+{
+  for (int i = 0; i < targetInput->numSourceFiles; i++)
+  {
+    if (needsCompiling(targetInput->sourceFiles[i]))
+    {
+      runCommandSync(targetInput->sourceFiles[i].compileCmd->args);
+    }
+  }
+}
+
 char **
 createArgsArray(const char *first, ...)
 {
