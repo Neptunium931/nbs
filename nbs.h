@@ -331,6 +331,12 @@ compileSources(target *targetInput)
   }
 }
 
+void
+linkTarget(target targetInput)
+{
+  runCommandSync(targetInput.linkCmd->args);
+}
+
 char **
 createArgsArray(const char *first, ...)
 {
