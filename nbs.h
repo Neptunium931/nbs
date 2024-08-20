@@ -58,7 +58,6 @@ void showTarget(const target targetInput);
 void freeTarget(target *targetInput);
 
 void compileSources(sourceFile sourceFiles);
-void compileTarget(target targetInput);
 void linkTarget(target targetInput);
 
 char **createArgsArray(const char *first, ...);
@@ -80,6 +79,7 @@ void PANIC(char *fmt, ...);
   {                                                                           \
     runCommandAsync(createArgsArray(__VA_ARGS__));                            \
   }
+
 #endif // NBS_H
 
 #define NBS_IMPLEMENTATION
